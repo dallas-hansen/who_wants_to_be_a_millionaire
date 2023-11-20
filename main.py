@@ -6,6 +6,9 @@ class Contestant:
     def add_money(self, amount):
         self.money += amount
 
+def get_question():
+    pass
+
 
 def main():
     pass
