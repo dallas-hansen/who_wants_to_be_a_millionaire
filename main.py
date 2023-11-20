@@ -7,10 +7,12 @@ class Contestant:
         self.money += amount
 
 def get_question():
+    # TODO: parse CSV
     pass
 
 
 def main():
+    # TODO: create main loop
     pass
 
 
