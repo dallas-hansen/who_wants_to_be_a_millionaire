@@ -1,29 +1,45 @@
+def check_guess(guess, answer):
+    if str(guess).upper() == answer.upper():
+        print('Correct!')
+        return True
+    else:
+        print('Nope!')
+        return False
+
+
+def next_question():
+    pass
+
+
 class Contestant:
     def __init__(self, name):
         self.name = name
         self.money = 0
-        self.lifeline = ['50/50', 
-                         'Ask the audience', 
+        self.lifeline = ['50/50',
+                         'Ask the audience',
                          'Phone Call']
         self.guess = ''
-    
+
     def add_money(self, amount):
         self.money += amount
 
-    
-    def guess(self):
+
+    def get_guess(self):
+        # Asks for input, sends to lifeline if selected
+        # Otherwise saves guess
+
         options = ['A', 'B', 'C', 'D']
         response = input().upper()
-        if self.guess == 'Y':
-            use_a_lifeline()
-        elif self.guess in options:
+        if response == 'Y':
+            self.use_a_lifeline()
+        elif response in options:
             self.guess = response
         else:
             return None
-    
+
 
     def use_a_lifeline(contestant):
-        print(f'You have {contestant.lifeline} left')
+        pass
 
 
     def fifty_fifty(contestant):
@@ -38,46 +54,59 @@ class Contestant:
         pass
 
 
-def get_question():
-    # TODO: parse CSV
-    question = 'What is my name?'
-    answer = 'A'
-    options = {'A': 'Dallas',
-               'B': 'Troy',
-               'C': 'Bob',
-               'D': 'Kevin'
-               }
-    return question, options, answer
+class Level:
+    money_tree = {
+        1 : 100,
+        2 : 200,
+        3 : 300,
+        4 : 500,
+        5 : 1_000,
+        6 : 2_000,
+        7 : 4_000,
+        8 : 8_000,
+        9 : 16_000,
+        10 : 32_000,
+        11 : 64_000,
+        12 : 125_000,
+        13 : 250_000,
+        14 : 500_000,
+        15 : 1_000_000
+    }
+
+    def __init__(self):
+        self.round_number = 1
+        self.level_amount = 0
+        self.question = ''
+        self.answer = ''
+        self.options = ''
 
 
-def display_question(question, options):
-    # Simply prints out the question
-    print(f'Question: {question}\n')
-    print(f'Options:')
-    for k, v in options.items():
-        print(f'{k}: {v}')
-    print('Press Y to use a lifeline')
-    print()
+    def get_question(self):
+        # TODO: parse CSV
+        self.question = 'What is my name?'
+        self.answer = 'A'
+        self.options = {'A': 'Dallas',
+                'B': 'Troy',
+                'C': 'Bob',
+                'D': 'Kevin'
+                }
 
 
-def check_guess(guess, answer):
-    if str(guess).upper() == answer.upper():
-        print('Correct!')
-        return True
-    else:
-        print('Nope!')
-        return False
+    def display_question(self):
+        # Simply prints out the question
+        print(f'\nQuestion {self.round_number}: {self.question}\n')
+        print('Options:\n')
+        for k, v in self.options.items():
+            print(f'{k}: {v}')
+        print('\nPress Y to use a lifeline\n')
 
-     
+
 def main():
     # TODO: create main loop
     contestant = Contestant(input('What is your name?\n'))
-    while True:
-        question, options, answer = get_question()
-        display_question(question, options)
-        check_guess(guess(contestant), answer)
-        break
-
+    level = Level()
+    level.get_question()
+    level.display_question()
 
 
 if __name__ == '__main__':
