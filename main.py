@@ -1,23 +1,16 @@
-def check_guess(guess, answer):
-    if str(guess).upper() == answer.upper():
-        print('Correct!')
-        return True
-    else:
-        print('Nope!')
-        return False
-
-
-def next_question():
-    pass
-
+def line_break(key='*'):
+    print()
+    print(key * 50)
+    print()
 
 class Contestant:
-    def __init__(self, name):
+    def __init__(self, name, level):
         self.name = name
         self.money = 0
-        self.lifeline = ['50/50',
-                         'Ask the audience',
-                         'Phone Call']
+        self.lifeline = {'50/50': level.fifty_fifty,
+                         'Ask the audience': level.ask_the_audience,
+                         'Phone Call': level.phone_call
+                         }
         self.guess = ''
 
     def add_money(self, amount):
@@ -28,33 +21,48 @@ class Contestant:
         # Asks for input, sends to lifeline if selected
         # Otherwise saves guess
 
-        options = ['A', 'B', 'C', 'D']
         response = input().upper()
         if response == 'Y':
             self.use_a_lifeline()
-        elif response in options:
+        elif response in Level.choices:
             self.guess = response
         else:
             return None
+        
+    
+    def print_lifelines(self):
+        # Prints available lifelines
+        # Returns available lifelines
+
+        line_break()
+        print('Lifelines available:\n')
+        available_lifelines = {}
+        for num, i in enumerate(self.lifeline):
+            available_lifelines[num] = i
+            print(f'{num + 1}: {i}')
+        return available_lifelines
 
 
-    def use_a_lifeline(contestant):
-        pass
+    def use_a_lifeline(self):
+        # Executes selected lifeline
+        # Deletes lifeline from options
+        
+        available_lifelines = self.print_lifelines()
+        choice = available_lifelines[int(input('Enter number of lifeline:\n')) - 1]
+        self.lifeline[choice]()
+        del self.lifeline[choice]
 
 
-    def fifty_fifty(contestant):
-        pass
-
-
-    def ask_the_audience(contestant):
-        pass
-
-
-    def phone_call(contestant):
-        pass
-
+    def check_guess(self, answer):
+        if self.guess == answer:
+            print('Correct!')
+            return True
+        else:
+            print('Nope!')
+            return False
 
 class Level:
+    choices = ['A', 'B', 'C', 'D']
     money_tree = {
         1 : 100,
         2 : 200,
@@ -75,7 +83,7 @@ class Level:
 
     def __init__(self):
         self.round_number = 1
-        self.level_amount = 0
+        self.level_amount = 100
         self.question = ''
         self.answer = ''
         self.options = ''
@@ -94,19 +102,42 @@ class Level:
 
     def display_question(self):
         # Simply prints out the question
+        line_break()
         print(f'\nQuestion {self.round_number}: {self.question}\n')
         print('Options:\n')
         for k, v in self.options.items():
             print(f'{k}: {v}')
-        print('\nPress Y to use a lifeline\n')
+        print('\n Or: Press Y to use a lifeline\n')
+
+
+    def increase_round_and_amount(self):
+        self.round_number += 1
+        self.level_amount = self.money_tree[self.round_number]
+
+    
+    def fifty_fifty(self):
+        print('You used 50/50')
+        # TODO: Finish function
+
+
+    def ask_the_audience(self):
+        print('You used Ask the Audience')
+        # TODO: Finish function
+
+
+    def phone_call(self):
+        print('You used Phone Call')
+        # TODO: Finish function
 
 
 def main():
     # TODO: create main loop
-    contestant = Contestant(input('What is your name?\n'))
     level = Level()
+    contestant = Contestant(input('What is your name?\n'), level)
     level.get_question()
     level.display_question()
+    contestant.get_guess()
+    contestant.print_lifelines()
 
 
 if __name__ == '__main__':
