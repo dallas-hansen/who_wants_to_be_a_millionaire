@@ -24,6 +24,8 @@ class Player:
         self.money = amount
 
     def back_out_chance(self):
+        if self.game.end_condition_met is True:
+            return
         print(f'\nYou currently have ${self.money}.\n')
         choice = ''
         y_n = ['Y', 'N']
@@ -95,12 +97,14 @@ class Player:
         else:
             self.money = 0
             print(f'\nNope! Sorry! You are leaving with ${self.money}\n')
+            print(f'Answer was {self.game.answer}: {self.game.options[self.game.answer]}.')
             return True
 
 class Game:
     
     f = open('question_list.json')
     question_list = json.load(f)
+    end_condition_met = False
     
     choices = ['A', 'B', 'C', 'D']
     money_tree = {
@@ -135,9 +139,8 @@ class Game:
         self.players.append(player)
 
 
-    def get_question(self):
-        # TODO: parse JSON file
-        random_number = -1
+    def get_question(self, debug_num=-1):
+        random_number = debug_num
         while random_number in self.random_numbers_used or random_number == -1:
             random_number = random.randint(0, 546)
         self.random_numbers_used.append(random_number)
@@ -173,20 +176,18 @@ class Game:
                            2: 'C',
                            3: 'D'
                            }
-        random_num = random.randint(0, 3)
-        selected = []
-        while coupled_options[random_num] == self.answer or len(selected) < 2:
-            random_num = random.randint(0, 3)
-            if coupled_options[random_num] != self.answer:
-                print(selected)
-                selected.append(coupled_options[random_num])
-        for i in selected:
-            del self.options[i]
+        counter = 3
+        chosen = []
+        while counter != 1:
+            rmv_options = coupled_options[random.randint(0, counter)]
+            if rmv_options != self.answer and rmv_options not in chosen:
+                chosen.append(rmv_options)
+                counter -= 1
+                del self.options[rmv_options]
 
 
     def ask_the_audience(self):
         print('You used Ask the Audience')
-        # TODO: Finish function
 
 
     def phone_call(self):
@@ -194,27 +195,52 @@ class Game:
         # TODO: Finish function
 
 
+    def find_question(self):
+        prompt = 'Which of these Australian birds is most closely related to the ostrich?'
+        for i in self.question_list:
+            if i['question'] == prompt:
+                print(self.question_list.index(i))
+
+
 def main():
-    # TODO: create main loop
-    line_break('$')
-    intro = ('Welcome to Who Wants to be a Millionaire!\n'
-             'All the questions are taken randomly from a pool of 547.\n'
-             'Get 15 questions correct, in a row, to become a Millionaire!')
-    print(intro)                          
-    line_break('$')
+    debug = False
+    debug_choices = 'Y'
+    
+    if debug is False:
+        line_break('$')
+        intro = ('Welcome to Who Wants to be a Millionaire!\n'
+                'All the questions are taken randomly from a pool of 547.\n'
+                'Get 15 questions correct, in a row, to become a Millionaire!')
+        print(intro)                          
+        line_break('$')
 
-    game = Game()
-    player1 = Player(input('What is your name?\n\n'), game)
-    game.add_player(player1)
+        game = Game()
+        player1 = Player(input('What is your name?\n\n'), game)
+        game.add_player(player1)
 
-############################################################
-    end_condition_met = False
-    while end_condition_met is False and player1.money < 1_000_000:
-        game.get_question()
-        player1.get_guess()
-        end_condition_met = player1.check_guess()
-        end_condition_met = player1.back_out_chance()
+        ############################################################
+        
+        while game.end_condition_met is False and player1.money < 1_000_000:
+            game.get_question()
+            player1.get_guess()
+            game.end_condition_met = player1.check_guess()
+            game.end_condition_met = player1.back_out_chance()
+    
+    else:
+        game = Game()
+        player1 = Player('Game Tester', game)
+        game.add_player(player1)
 
+        ############################################################
+        
+        # game.find_question()
+        while game.end_condition_met is False and player1.money < 1_000_000:
+            game.get_question(417)
+            player1.get_guess()
+            # game.end_condition_met = player1.check_guess()
+            # game.end_condition_met = player1.back_out_chance()
+
+    
 
 if __name__ == '__main__':
     main()
