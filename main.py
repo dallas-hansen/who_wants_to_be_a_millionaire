@@ -187,13 +187,12 @@ class Game:
 
 
     def ask_the_audience(self):
-        num_options = len(self.options)
-        correct_answer = self.answer
         # Generate random percentages for each option
-        audience_response = {chr(65 + i): random.randint(1, 100) for i in range(num_options)}
+
+        audience_response = {option: random.randint(1, 100) for option in self.options}
 
         # Ensure the correct answer has a higher percentage
-        audience_response[correct_answer] = max(audience_response.values()) + random.randint(10, 20)
+        audience_response[self.answer] = max(audience_response.values()) + random.randint(10, 20)
 
         # Normalize percentages to add up to 100
         total_percentage = sum(audience_response.values())
@@ -211,7 +210,7 @@ class Game:
             print(f"Friend's answer: {correct_answer}: {self.options[correct_answer]}")
         else:
             # If the friend doesn't know, return a random incorrect answer
-            options = self.options.keys()
+            options = list(self.options.keys())
             options.remove(correct_answer)
             oof = random.choice(options)
             print(f"Friend's answer: {oof}: {self.options[oof]}")
@@ -225,7 +224,7 @@ class Game:
 
 
 def main():
-    debug = False
+    debug = True
     debug_choices = 'Y'
     
     if debug is False:
