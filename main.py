@@ -14,7 +14,7 @@ class Player:
         self.money = 0
         self.lifeline = {'50/50': game.fifty_fifty,
                          'Ask the audience': game.ask_the_audience,
-                         'Phone Call': game.phone_call
+                         'Phone a friend': game.phone_a_friend
                          }
         self.guess = ''
         self.game = game
@@ -187,12 +187,34 @@ class Game:
 
 
     def ask_the_audience(self):
-        print('You used Ask the Audience')
+        num_options = len(self.options)
+        correct_answer = self.answer
+        # Generate random percentages for each option
+        audience_response = {chr(65 + i): random.randint(1, 100) for i in range(num_options)}
+
+        # Ensure the correct answer has a higher percentage
+        audience_response[correct_answer] = max(audience_response.values()) + random.randint(10, 20)
+
+        # Normalize percentages to add up to 100
+        total_percentage = sum(audience_response.values())
+        normalization_factor = 100 / total_percentage
+        audience_response = {option: percentage * normalization_factor for option, percentage in audience_response.items()}
+        
+        for k,v in audience_response.items():
+            print(f'{k}: {v:.0f}%')
 
 
-    def phone_call(self):
-        print('You used Phone Call')
-        # TODO: Finish function
+    def phone_a_friend(self, friend_knowledge_probability=0.7):
+        correct_answer = self.answer
+        # Simulate the friend's knowledge of the correct answer
+        if random.uniform(0, 1) < friend_knowledge_probability:
+            print(f"Friend's answer: {correct_answer}: {self.options[correct_answer]}")
+        else:
+            # If the friend doesn't know, return a random incorrect answer
+            options = self.options.keys()
+            options.remove(correct_answer)
+            oof = random.choice(options)
+            print(f"Friend's answer: {oof}: {self.options[oof]}")
 
 
     def find_question(self):
