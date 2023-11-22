@@ -1,6 +1,12 @@
 import json
 import random
 
+def choose_file():
+    # print('Thanks for playing my game!')
+    # print('Please select which type of questions you\'d like')
+    f = open('question_list.json')
+    question_list = json.load(f)
+    return question_list
 
 def line_break(key='*'):
     print()
@@ -105,8 +111,7 @@ class Player:
 
 class Game:
     
-    f = open('question_list.json')
-    question_list = json.load(f)
+    question_list = choose_file()
     end_condition_met = False
     
     choices = ['A', 'B', 'C', 'D']
@@ -232,14 +237,14 @@ def main():
     debug_choices = 'Y'
     
     if debug is False:
+        game = Game()
         line_break('$')
         intro = ('Welcome to Who Wants to be a Millionaire!\n'
-                'All the questions are taken randomly from a pool of 547.\n'
+                f'All the questions are taken randomly from a pool of {len(game.question_list)}.\n'
                 'Get 15 questions correct, in a row, to become a Millionaire!')
         print(intro)                          
         line_break('$')
 
-        game = Game()
         player1 = Player(input('What is your name?\n\n'), game)
         game.add_player(player1)
 
