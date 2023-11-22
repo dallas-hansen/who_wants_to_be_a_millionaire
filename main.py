@@ -1,36 +1,61 @@
+import json
+import random
+
+
 def line_break(key='*'):
     print()
     print(key * 50)
     print()
 
-class Contestant:
-    def __init__(self, name, level):
+
+class Player:
+    def __init__(self, name, game):
         self.name = name
         self.money = 0
-        self.lifeline = {'50/50': level.fifty_fifty,
-                         'Ask the audience': level.ask_the_audience,
-                         'Phone Call': level.phone_call
+        self.lifeline = {'50/50': game.fifty_fifty,
+                         'Ask the audience': game.ask_the_audience,
+                         'Phone Call': game.phone_call
                          }
         self.guess = ''
+        self.game = game
+
 
     def add_money(self, amount):
-        self.money += amount
+        self.money = amount
 
+    def back_out_chance(self):
+        print(f'\nYou currently have ${self.money}.\n')
+        choice = ''
+        y_n = ['Y', 'N']
+        while choice not in y_n:
+            choice = input("Would you like to continue? (Y/N): ").upper()
+        if choice == 'Y':
+            return False
+        else:
+            print(f"\nCongratulations, {self.name}! You've won ${self.money}!\n")
+            return True
 
     def get_guess(self):
         # Asks for input, sends to lifeline if selected
         # Otherwise saves guess
-
-        response = input().upper()
-        if response == 'Y':
-            self.use_a_lifeline()
-        elif response in Level.choices:
-            self.guess = response
-        else:
-            return None
+        response = ''
+        while response not in Game.choices:
+            if len(self.lifeline) > 0:
+                self.game.display_question()
+                response = input('Choose an option, or press Y to use a lifeline:\n').upper()
+                if response == 'Y':
+                    self.use_a_lifeline()
+                elif response in Game.choices:
+                    self.guess = response
+                else:
+                    print('\n*****Option not available, try again*****\n')
+            else:
+                self.game.display_question()
+                response = input('Choose an option:\n').upper()
+                self.guess = response
         
-    
-    def print_lifelines(self):
+
+    def print_lifelines_with_numbers(self, add_numbers=True):
         # Prints available lifelines
         # Returns available lifelines
 
@@ -39,29 +64,44 @@ class Contestant:
         available_lifelines = {}
         for num, i in enumerate(self.lifeline):
             available_lifelines[num] = i
-            print(f'{num + 1}: {i}')
+            if not add_numbers:
+                print(f'{i}')
+            else:
+                print(f'{num + 1}: {i}')
         return available_lifelines
 
 
     def use_a_lifeline(self):
         # Executes selected lifeline
         # Deletes lifeline from options
-        
-        available_lifelines = self.print_lifelines()
-        choice = available_lifelines[int(input('Enter number of lifeline:\n')) - 1]
-        self.lifeline[choice]()
-        del self.lifeline[choice]
+
+        available_lifelines = self.print_lifelines_with_numbers()
+        choice = -1 # Initializing choice - shouldn't be an option in available_lifelines
+        while choice not in available_lifelines:
+            choice = int(input('\nEnter number of a lifeline: ')) - 1
+        print()
+        self.lifeline[available_lifelines[choice]]()
+        print()
+        del self.lifeline[available_lifelines[choice]]
 
 
-    def check_guess(self, answer):
-        if self.guess == answer:
-            print('Correct!')
-            return True
-        else:
-            print('Nope!')
+    def check_guess(self):
+        positive_exclamations = ['Bravo', 'Amazing', 'Correct', 'Ay, caramba', 'Wow', 'Congrats']
+        if self.guess == self.game.answer:
+            print(f'\n{random.choice(positive_exclamations)}, {self.name}!\n')
+            self.add_money(self.game.level_amount)
+            self.game.increase_round_and_amount()
             return False
+        else:
+            self.money = 0
+            print(f'\nNope! Sorry! You are leaving with ${self.money}\n')
+            return True
 
-class Level:
+class Game:
+    
+    f = open('question_list.json')
+    question_list = json.load(f)
+    
     choices = ['A', 'B', 'C', 'D']
     money_tree = {
         1 : 100,
@@ -87,27 +127,38 @@ class Level:
         self.question = ''
         self.answer = ''
         self.options = ''
+        self.players = []
+        self.random_numbers_used = []
+
+    
+    def add_player(self, player):
+        self.players.append(player)
 
 
     def get_question(self):
-        # TODO: parse CSV
-        self.question = 'What is my name?'
-        self.answer = 'A'
-        self.options = {'A': 'Dallas',
-                'B': 'Troy',
-                'C': 'Bob',
-                'D': 'Kevin'
+        # TODO: parse JSON file
+        random_number = -1
+        while random_number in self.random_numbers_used or random_number == -1:
+            random_number = random.randint(0, 546)
+        self.random_numbers_used.append(random_number)
+        data = self.question_list[random_number]        
+
+        self.question = data['question']
+        self.answer = data['answer']
+        self.options = {'A': data['A'],
+                'B': data['B'],
+                'C': data['C'],
+                'D': data['D']
                 }
 
 
     def display_question(self):
         # Simply prints out the question
-        line_break()
+        self.players[0].print_lifelines_with_numbers(False)
         print(f'\nQuestion {self.round_number}: {self.question}\n')
-        print('Options:\n')
         for k, v in self.options.items():
             print(f'{k}: {v}')
-        print('\n Or: Press Y to use a lifeline\n')
+        print()
 
 
     def increase_round_and_amount(self):
@@ -117,7 +168,20 @@ class Level:
     
     def fifty_fifty(self):
         print('You used 50/50')
-        # TODO: Finish function
+        coupled_options = {0: 'A',
+                           1: 'B',
+                           2: 'C',
+                           3: 'D'
+                           }
+        random_num = random.randint(0, 3)
+        selected = []
+        while coupled_options[random_num] == self.answer or len(selected) < 2:
+            random_num = random.randint(0, 3)
+            if coupled_options[random_num] != self.answer:
+                print(selected)
+                selected.append(coupled_options[random_num])
+        for i in selected:
+            del self.options[i]
 
 
     def ask_the_audience(self):
@@ -132,12 +196,24 @@ class Level:
 
 def main():
     # TODO: create main loop
-    level = Level()
-    contestant = Contestant(input('What is your name?\n'), level)
-    level.get_question()
-    level.display_question()
-    contestant.get_guess()
-    contestant.print_lifelines()
+    line_break('$')
+    intro = ('Welcome to Who Wants to be a Millionaire!\n'
+             'All the questions are taken randomly from a pool of 547.\n'
+             'Get 15 questions correct, in a row, to become a Millionaire!')
+    print(intro)                          
+    line_break('$')
+
+    game = Game()
+    player1 = Player(input('What is your name?\n\n'), game)
+    game.add_player(player1)
+
+############################################################
+    end_condition_met = False
+    while end_condition_met is False and player1.money < 1_000_000:
+        game.get_question()
+        player1.get_guess()
+        end_condition_met = player1.check_guess()
+        end_condition_met = player1.back_out_chance()
 
 
 if __name__ == '__main__':
