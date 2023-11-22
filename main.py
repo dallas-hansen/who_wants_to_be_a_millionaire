@@ -89,6 +89,9 @@ class Player:
 
     def check_guess(self):
         positive_exclamations = ['Bravo', 'Amazing', 'Correct', 'Ay, caramba', 'Wow', 'Congrats']
+        negative_exclamations = ['Sorry', 'Better luck next time',
+                                 'Can\'t say I would have guessed that',
+                                 'Nope', 'You can always try again']
         if self.guess == self.game.answer:
             print(f'\n{random.choice(positive_exclamations)}, {self.name}!\n')
             self.add_money(self.game.level_amount)
@@ -96,8 +99,8 @@ class Player:
             return False
         else:
             self.money = 0
-            print(f'\nNope! Sorry! You are leaving with ${self.money}\n')
-            print(f'Answer was {self.game.answer}: {self.game.options[self.game.answer]}.')
+            print(f'\n{random.choice(negative_exclamations)}, {self.name}. You\'re walking away with ${self.money}\n')
+            print(f'Answer was {self.game.answer}: {self.game.options[self.game.answer]}.\n')
             return True
 
 class Game:
@@ -158,7 +161,8 @@ class Game:
     def display_question(self):
         # Simply prints out the question
         self.players[0].print_lifelines_with_numbers(False)
-        print(f'\nQuestion {self.round_number}: {self.question}\n')
+        print(f'\n\nRound {self.round_number}:')
+        print(f'${self.level_amount} Question: {self.question}\n')
         for k, v in self.options.items():
             print(f'{k}: {v}')
         print()
@@ -224,7 +228,7 @@ class Game:
 
 
 def main():
-    debug = True
+    debug = False
     debug_choices = 'Y'
     
     if debug is False:
